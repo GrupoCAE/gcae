@@ -1,3 +1,11 @@
+title: Grupo CAE
+subtitle: Reinventing Technology since 2004
+description: >- # this means to ignore newlines until "baseurl:"
+  Site in progress
+author: Grupo CAE
+email: pending...
+
+
 # The following settings are NECESSARY for the Prologue theme to run:
 theme: jekyll-theme-prologue
 collections: [sections]
