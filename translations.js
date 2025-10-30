@@ -1,5 +1,13 @@
 const translations = {
     es: {
+        // --- (NUEVO) SEO ---
+        meta_title: "Grupo CAE - Corporativo de Aplicaciones Empresariales",
+        meta_description: "Consultoría Web, Hosting, Dominios y Creación Acelerada de Contenido con IA para impulsar tu presencia digital.",
+        
+        // --- (NUEVO) Menú Móvil (Accesibilidad) ---
+        nav_open_menu: "Abrir menú principal",
+        nav_close_menu: "Cerrar menú principal",
+        
         nav_services: "Servicios",
         nav_about: "Nosotros",
         nav_content_ai: "Contenido IA",
@@ -35,6 +43,14 @@ const translations = {
         form_alert_error: "Hubo un error al enviar el mensaje: "
     },
     en: {
+        // --- (NUEVO) SEO ---
+        meta_title: "Grupo CAE - Corporate Business Applications",
+        meta_description: "Web Consulting, Hosting, Domains, and AI-Accelerated Content Creation to boost your digital presence.",
+
+        // --- (NUEVO) Menú Móvil (Accesibilidad) ---
+        nav_open_menu: "Open main menu",
+        nav_close_menu: "Close main menu",
+        
         nav_services: "Services",
         nav_about: "About Us",
         nav_content_ai: "AI Content",
