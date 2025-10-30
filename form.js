@@ -45,14 +45,14 @@ function onSubmitForm(token) {
       // 2. Inicia el desvanecimiento (fade-out) después de 5 segundos
       setTimeout(() => {
         successMsgDiv.classList.add('opacity-0');
-      }, 5000); // 5000ms = 5 segundos (como solicitaste)
+      }, 4000); // 4000ms = 4 segundos 
       
       // 3. Oculta el div completamente después de que termine la animación de fade-out
       // (5000ms de espera + 500ms de transición = 5500ms)
       setTimeout(() => {
         successMsgDiv.classList.add('hidden');
         successMsgDiv.textContent = ''; // Limpia el texto
-      }, 5500);
+      }, 4500);
       
     }, (err) => {
       // --- ERROR ---
