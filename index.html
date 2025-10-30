@@ -326,47 +326,52 @@
 
 <script type="text/javascript">
 const btn = document.getElementById('button');
-const form = document.getElementById('form');
 
-form.addEventListener('submit', function(event) {
-   event.preventDefault(); // Previene el envío por defecto
+document.getElementById('form')
+ .addEventListener('submit', function(event) {
+   event.preventDefault(); // Previene el envío automático
 
    // --- INICIO DE LA VALIDACIÓN ---
+   // Obtenemos la respuesta del reCAPTCHA
    const recaptchaResponse = grecaptcha.getResponse();
 
+   // Verificamos si está vacía
    if (recaptchaResponse.length === 0) {
-     // Si el reCAPTCHA está vacío, muestra una alerta y no hagas nada más.
+     // Si está vacío, muestra un error y detiene todo
      alert('Por favor, completa el reCAPTCHA ("No soy un robot").');
-     return; 
+     return; // Detiene la función aquí
    }
    // --- FIN DE LA VALIDACIÓN ---
 
-   // Si el reCAPTCHA se completó, continúa con el envío.
    
-   // Usamos el texto original del botón
+   // --- SI LA VALIDACIÓN ES CORRECTA, SE EJECUTA EL ENVÍO ---
+   
+   // Guardamos el texto original del botón
    const originalBtnText = btn.textContent; 
    btn.textContent = 'Enviando...'; // Cambia el texto del botón
-   btn.disabled = true; // Deshabilita el botón
+   btn.disabled = true; // Deshabilita el botón para evitar doble clic
 
    const serviceID = 'default_service';
    const templateID = 'template_ygh40cq';
 
+   // 'this' se refiere al formulario (<form>)
    emailjs.sendForm(serviceID, templateID, this)
     .then(() => {
-      btn.textContent = originalBtnText; // Restaura el texto
-      btn.disabled = false; // Rehabilita el botón
+      // Éxito
+      btn.textContent = originalBtnText; // Restaura el texto original
+      btn.disabled = false; // Vuelve a habilitar el botón
       alert('¡Mensaje enviado correctamente!');
       
-      // Resetea el formulario y el reCAPTCHA
-      grecaptcha.reset();
-      form.reset();
+      grecaptcha.reset(); // Resetea el reCAPTCHA
+      this.reset();      // Resetea los campos del formulario
+      
     }, (err) => {
-      btn.textContent = originalBtnText; // Restaura el texto
-      btn.disabled = false; // Rehabilita el botón
+      // Error
+      btn.textContent = originalBtnText; // Restaura el texto original
+      btn.disabled = false; // Vuelve a habilitar el botón
       alert('Hubo un error al enviar el mensaje: ' + JSON.stringify(err));
       
-      // Resetea el reCAPTCHA también en caso de error
-      grecaptcha.reset();
+      grecaptcha.reset(); // Resetea el reCAPTCHA también en caso de error
     });
 });
 </script>
