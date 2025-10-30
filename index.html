@@ -56,7 +56,7 @@
                   </defs>
                   <g stroke="url(#brainGradient)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M32 2 C18 2 6 14 6 28 C6 38 13 48 22 52 L20 62"/>
-                    <path d="M32 2 C46 2 58 14 58 28 C58 40 50 50 42 53 M44 56 L46 62"/>
+                    <path d;="M32 2 C46 2 58 14 58 28 C58 40 50 50 42 53 M44 56 L46 62"/>
                     <path d="M22 52 A 20 20 0 0 0 42 53"/>
                     <circle cx="12" cy="28" r="4" fill="url(#brainGradient)" stroke="none"/>
                     <circle cx="28" cy="42" r="4" fill="url(#brainGradient)" stroke="none"/>
@@ -174,6 +174,10 @@
                               data-callback="onSubmitForm">
                               </div>
                     </div>
+
+                    <div id="form-success-message"
+                         class="hidden p-3 rounded-md bg-green-100 text-green-700 font-medium text-center">
+                         </div>
                     <div>
                         <button type="submit" id="button"
                                 class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-300"
@@ -181,7 +185,6 @@
                             Enviar Mensaje
                         </button>
                     </div>
-                    <p class="text-xs text-center text-gray-500" data-lang-key="form_note">Nota: Este es un formulario de ejemplo. Se necesita configuración de backend para enviar correos y validar reCAPTCHA.</p>
                 </form>
             </div>
         </section>
@@ -199,82 +202,11 @@
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
     </a>
 
+    <script src="translations.js"></script>
+    
     <script>
         // --- Language Content ---
-        const translations = {
-            es: {
-                nav_services: "Servicios",
-                nav_about: "Nosotros",
-                nav_content_ai: "Contenido IA",
-                nav_contact: "Contacto",
-                hero_title: "Impulsamos tu Presencia Digital",
-                hero_subtitle: "Consultoría Web, Hosting, Dominios y Creación Acelerada de Contenido con IA.",
-                company_name: "Grupo CAE - Corporativo de Aplicaciones Empresariales",
-                hero_cta: "Descubre Más",
-                services_title: "Nuestros Servicios",
-                service1_title: "Consultoría Web",
-                service1_desc: "Análisis y estrategia para optimizar sitios y aplicaciones web, mejorando la experiencia de usuario y el rendimiento.",
-                service2_title: "Hosting y Dominios",
-                service2_desc: "Soluciones de alojamiento web confiables y registro de dominios para asegurar tu identidad en línea.",
-                service3_title: "Desarrollo Web/App",
-                service3_desc: "Creación de sitios web y aplicaciones a medida, funcionales, atractivos y optimizados para tus objetivos.",
-                about_title: "Sobre Grupo CAE",
-                about_text1: "Somos Corporativo de Aplicaciones Empresariales (Grupo CAE), tu socio estratégico en el mundo digital. Nos apasiona transformar ideas en soluciones web efectivas y potenciar negocios a través de la tecnología.",
-                about_text2: "Combinamos experiencia técnica con un enfoque centrado en el cliente para ofrecer resultados medibles y duraderos.",
-                content_ai_title: "Generación de Contenido con IA",
-                content_ai_text: "Aceleramos la creación de tus productos y contenidos digitales utilizando inteligencia artificial. Genera textos, ideas y materiales de marketing de forma más rápida y eficiente, manteniendo la calidad y relevancia.",
-                contact_title: "Contáctanos",
-                contact_intro: "¿Tienes un proyecto en mente o alguna pregunta? Completa el formulario y nos pondremos en contacto contigo.",
-                form_name: "Nombre",
-                form_email: "Email",
-                form_subject: "Asunto",
-                form_message: "Mensaje",
-                form_submit: "Enviar Mensaje",
-                form_note: "Nota: Este es un formulario de ejemplo. Se necesita configuración de backend para enviar correos y validar reCAPTCHA.", // Updated note
-                google_form_alt: "O utiliza nuestro formulario de Google:",
-                footer_rights: "Todos los derechos reservados.",
-
-                // --- NUEVAS LÍNEAS DE ALERTA (ESPAÑOL) ---
-                form_alert_success: "¡Mensaje enviado correctamente!",
-                form_alert_error: "Hubo un error al enviar el mensaje: "
-            },
-            en: {
-                nav_services: "Services",
-                nav_about: "About Us",
-                nav_content_ai: "AI Content",
-                nav_contact: "Contact",
-                hero_title: "Boosting Your Digital Presence",
-                hero_subtitle: "Web Consulting, Hosting, Domains, and AI-Accelerated Content Creation.",
-                company_name: "Grupo CAE - Corporate Business Applications",
-                hero_cta: "Discover More",
-                services_title: "Our Services",
-                service1_title: "Web Consulting",
-                service1_desc: "Analysis and strategy to optimize websites and web applications, improving user experience and performance.",
-                service2_title: "Hosting & Domains",
-                service2_desc: "Reliable web hosting solutions and domain registration to secure your online identity.",
-                service3_title: "Web/App Development",
-                service3_desc: "Creation of custom websites and applications that are functional, attractive, and optimized for your goals.",
-                about_title: "About Grupo CAE",
-                about_text1: "We are Corporate Business Applications (Grupo CAE), your strategic partner in the digital world. We are passionate about transforming ideas into effective web solutions and empowering businesses through technology.",
-                about_text2: "We combine technical expertise with a customer-centric approach to deliver measurable and lasting results.",
-                content_ai_title: "AI Content Generation",
-                content_ai_text: "We accelerate the creation of your digital products and content using artificial intelligence. Generate texts, ideas, and marketing materials faster and more efficiently, maintaining quality and relevance.",
-                contact_title: "Contact Us",
-                contact_intro: "Have a project in mind or a question? Fill out the form, and we'll get in touch with you.",
-                form_name: "Name",
-                form_email: "Email",
-                form_subject: "Subject",
-                form_message: "Message",
-                form_submit: "Send Message",
-                form_note: "Note: This is a sample form. Backend setup is required for email sending and reCAPTCHA validation.", // Updated note
-                google_form_alt: "Or use our Google Form:",
-                footer_rights: "All rights reserved.",
-
-                // --- NUEVAS LÍNEAS DE ALERTA (INGLÉS) ---
-                form_alert_success: "Message sent successfully!",
-                form_alert_error: "There was an error sending the message: "
-            }
-        };
+        // La variable 'translations' ahora viene de 'translations.js'
 
         let currentLanguage = 'es'; // Default language
 
@@ -339,11 +271,12 @@
     // Referencias a los elementos
     const btn = document.getElementById('button');
     const form = document.getElementById('form');
+    // Obtenemos la referencia al nuevo div de éxito
+    const successMsgDiv = document.getElementById('form-success-message');
     let originalBtnText = btn.textContent; // Texto original del botón
 
     /*
      * 1. Esta es la función 'callback' que Google llamará (gracias a 'data-callback="onSubmitForm"')
-     * Debe ser global (fuera de otros bloques) para que Google la encuentre.
      */
     function onSubmitForm(token) {
        
@@ -355,26 +288,31 @@
        const serviceID = 'default_service';
        const templateID = 'template_ygh40cq';
 
-       // 'form' ya contiene el token 'g-recaptcha-response' que Google inyectó.
-       // EmailJS lo leerá y validará en su backend con tu Clave Secreta.
        emailjs.sendForm(serviceID, templateID, form)
         .then(() => {
-          // Éxito
+          // --- INICIO LÓGICA DE ÉXITO ---
           btn.textContent = originalBtnText; 
           btn.disabled = false; 
           
-          // Lee las variables globales del script de traducciones
-          alert(translations[currentLanguage].form_alert_success);
+          // 1. Muestra el mensaje de éxito en el div
+          successMsgDiv.textContent = translations[currentLanguage].form_alert_success;
+          successMsgDiv.classList.remove('hidden');
           
           grecaptcha.reset(); // Resetea el reCAPTCHA invisible
           form.reset();      // Limpia el formulario
           
+          // 2. Oculta el mensaje después de 5 segundos (5000 ms)
+          setTimeout(() => {
+            successMsgDiv.classList.add('hidden');
+            successMsgDiv.textContent = ''; // Limpia el texto
+          }, 5000);
+          // --- FIN LÓGICA DE ÉXITO ---
+          
         }, (err) => {
-          // Error
+          // Error (sigue usando alert para errores)
           btn.textContent = originalBtnText; 
           btn.disabled = false; 
           
-          // Si el reCAPTCHA fue inválido, EmailJS devolverá un error aquí.
           alert(translations[currentLanguage].form_alert_error + JSON.stringify(err));
           
           grecaptcha.reset(); // Resetea aunque falle
@@ -383,13 +321,15 @@
 
     /*
      * 2. Este es el 'listener' del formulario.
-     * Ahora, en lugar de enviar, solo le pide a Google que valide.
      */
     form.addEventListener('submit', function(event) {
        event.preventDefault(); // Siempre previene el envío normal
        
+       // Oculta cualquier mensaje de éxito anterior al intentar un nuevo envío
+       successMsgDiv.classList.add('hidden');
+       successMsgDiv.textContent = '';
+       
        // Llama a Google para que valide.
-       // Si la validación es exitosa, Google llamará a 'onSubmitForm(token)'
        grecaptcha.execute();
     });
 
