@@ -8,39 +8,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-    <style>
-        /* Custom scrollbar styles (optional) */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-        /* Apply Inter font globally */
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        /* Smooth scrolling */
-        html {
-            scroll-behavior: smooth;
-        }
-        /* Hide back-to-top button initially */
-        #back-to-top {
-            display: none;
-            transition: opacity 0.3s ease-in-out;
-        }
-        #back-to-top.show {
-            display: flex;
-        }
-    </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
 
@@ -178,6 +148,7 @@
                     <div id="form-success-message"
                          class="hidden opacity-0 transition-opacity duration-500 ease-in-out p-3 rounded-md bg-green-100 text-green-700 font-medium text-center">
                          </div>
+
                     <div>
                         <button type="submit" id="button"
                                 class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-300"
@@ -185,7 +156,7 @@
                             Enviar Mensaje
                         </button>
                     </div>
-                    </form>
+                </form>
             </div>
         </section>
 
@@ -210,6 +181,6 @@
     <script src="site.js"></script>
     
     <script src="form.js"></script>
-    
-    </body>
+
+</body>
 </html>
