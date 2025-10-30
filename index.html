@@ -40,11 +40,6 @@
         #back-to-top.show {
             display: flex;
         }
-        /* Estilos para botón deshabilitado */
-        button:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
@@ -174,17 +169,13 @@
 
                     <div class="flex justify-center">
                          <div class="g-recaptcha"
-                              data-sitekey="6LdNdT4UAAAAAI_lDEePQWmW-7oaDp-CAokHyPJo"
-                              data-callback="enableSubmit">
-                         </div>
+                              data-sitekey="6LeD4PsrAAAAAO4oYiQ7nwoi6ifF8cDb0n8UTDim"
+                              data-size="invisible"
+                              data-callback="onSubmitForm">
+                              </div>
                     </div>
-
-                    <div id="captcha-error" class="text-red-500 text-center hidden">
-                        <p data-lang-key="captcha_error">Por favor, complete el captcha antes de enviar.</p>
-                    </div>
-
                     <div>
-                        <button type="submit" id="button" disabled
+                        <button type="submit" id="button"
                                 class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-300"
                                 data-lang-key="form_submit">
                             Enviar Mensaje
@@ -239,9 +230,13 @@
                 form_subject: "Asunto",
                 form_message: "Mensaje",
                 form_submit: "Enviar Mensaje",
-                form_note: "Nota: Este es un formulario de ejemplo. Se necesita configuración de backend para enviar correos y validar reCAPTCHA.",
-                captcha_error: "Por favor, complete el captcha antes de enviar.",
-                footer_rights: "Todos los derechos reservados."
+                form_note: "Nota: Este es un formulario de ejemplo. Se necesita configuración de backend para enviar correos y validar reCAPTCHA.", // Updated note
+                google_form_alt: "O utiliza nuestro formulario de Google:",
+                footer_rights: "Todos los derechos reservados.",
+
+                // --- NUEVAS LÍNEAS DE ALERTA (ESPAÑOL) ---
+                form_alert_success: "¡Mensaje enviado correctamente!",
+                form_alert_error: "Hubo un error al enviar el mensaje: "
             },
             en: {
                 nav_services: "Services",
@@ -271,9 +266,13 @@
                 form_subject: "Subject",
                 form_message: "Message",
                 form_submit: "Send Message",
-                form_note: "Note: This is a sample form. Backend setup is required for email sending and reCAPTCHA validation.",
-                captcha_error: "Please complete the captcha before submitting.",
-                footer_rights: "All rights reserved."
+                form_note: "Note: This is a sample form. Backend setup is required for email sending and reCAPTCHA validation.", // Updated note
+                google_form_alt: "Or use our Google Form:",
+                footer_rights: "All rights reserved.",
+
+                // --- NUEVAS LÍNEAS DE ALERTA (INGLÉS) ---
+                form_alert_success: "Message sent successfully!",
+                form_alert_error: "There was an error sending the message: "
             }
         };
 
@@ -324,61 +323,77 @@
         document.getElementById('current-year').textContent = new Date().getFullYear();
 
         // --- Initial Language Setup ---
-        changeLanguage(currentLanguage); // Set default language on load
+         changeLanguage(currentLanguage); // Set default language on load
 
-        // --- Función para habilitar el botón después de completar el captcha ---
-        function enableSubmit() {
-            document.getElementById('button').disabled = false;
-            document.getElementById('captcha-error').classList.add('hidden');
-        }
-
-        // --- Validación del formulario ---
-        document.getElementById('form').addEventListener('submit', function(event) {
-            // Verificar si el captcha ha sido completado
-            const response = grecaptcha.getResponse();
-            
-            if(response.length === 0) {
-                // Mostrar mensaje de error
-                event.preventDefault();
-                document.getElementById('captcha-error').classList.remove('hidden');
-                return false;
-            }
-            
-            // Si llegamos aquí, el captcha está completado
-            event.preventDefault();
-            
-            const btn = document.getElementById('button');
-            btn.textContent = translations[currentLanguage].form_submit === 'Enviar Mensaje' ? 'Enviando...' : 'Sending...';
-            btn.disabled = true;
-            
-            const serviceID = 'default_service';
-            const templateID = 'template_ygh40cq';
-            
-            emailjs.sendForm(serviceID, templateID, this)
-                .then(() => {
-                    btn.disabled = false;
-                    btn.textContent = translations[currentLanguage].form_submit;
-                    alert(translations[currentLanguage].form_submit === 'Enviar Mensaje' ? '¡Enviado!' : 'Sent!');
-                    // Resetear el formulario y el captcha
-                    this.reset();
-                    grecaptcha.reset();
-                    btn.disabled = true; // Deshabilitar el botón nuevamente hasta que se complete el captcha
-                }, (err) => {
-                    btn.disabled = false;
-                    btn.textContent = translations[currentLanguage].form_submit;
-                    alert(JSON.stringify(err));
-                    // Resetear el captcha en caso de error
-                    grecaptcha.reset();
-                    btn.disabled = true; // Deshabilitar el botón nuevamente hasta que se complete el captcha
-                });
-        });
     </script>
-        <script type="text/javascript"
-  src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script type="text/javascript"
+      src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
-<script type="text/javascript">
-  emailjs.init('B2i4b0UQcAco5iAUz')
-</script>
+    <script type="text/javascript">
+      emailjs.init('B2i4b0UQcAco5iAUz')
+    </script>
 
-</body>
+    <script type="text/javascript">
+    // --- INICIO SCRIPT FORMULARIO reCAPTCHA v2 Invisible ---
+
+    // Referencias a los elementos
+    const btn = document.getElementById('button');
+    const form = document.getElementById('form');
+    let originalBtnText = btn.textContent; // Texto original del botón
+
+    /*
+     * 1. Esta es la función 'callback' que Google llamará (gracias a 'data-callback="onSubmitForm"')
+     * Debe ser global (fuera de otros bloques) para que Google la encuentre.
+     */
+    function onSubmitForm(token) {
+       
+       // Actualiza el texto del botón (por si cambió el idioma)
+       originalBtnText = document.getElementById('button').textContent;
+       btn.textContent = 'Enviando...'; 
+       btn.disabled = true; 
+
+       const serviceID = 'default_service';
+       const templateID = 'template_ygh40cq';
+
+       // 'form' ya contiene el token 'g-recaptcha-response' que Google inyectó.
+       // EmailJS lo leerá y validará en su backend con tu Clave Secreta.
+       emailjs.sendForm(serviceID, templateID, form)
+        .then(() => {
+          // Éxito
+          btn.textContent = originalBtnText; 
+          btn.disabled = false; 
+          
+          // Lee las variables globales del script de traducciones
+          alert(translations[currentLanguage].form_alert_success);
+          
+          grecaptcha.reset(); // Resetea el reCAPTCHA invisible
+          form.reset();      // Limpia el formulario
+          
+        }, (err) => {
+          // Error
+          btn.textContent = originalBtnText; 
+          btn.disabled = false; 
+          
+          // Si el reCAPTCHA fue inválido, EmailJS devolverá un error aquí.
+          alert(translations[currentLanguage].form_alert_error + JSON.stringify(err));
+          
+          grecaptcha.reset(); // Resetea aunque falle
+        });
+    }
+
+    /*
+     * 2. Este es el 'listener' del formulario.
+     * Ahora, en lugar de enviar, solo le pide a Google que valide.
+     */
+    form.addEventListener('submit', function(event) {
+       event.preventDefault(); // Siempre previene el envío normal
+       
+       // Llama a Google para que valide.
+       // Si la validación es exitosa, Google llamará a 'onSubmitForm(token)'
+       grecaptcha.execute();
+    });
+
+    // --- FIN SCRIPT FORMULARIO ---
+    </script>
+    </body>
 </html>
