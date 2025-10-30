@@ -1565,23 +1565,47 @@
 
 <script type="text/javascript">
 const btn = document.getElementById('button');
+const form = document.getElementById('form');
 
-document.getElementById('form')
- .addEventListener('submit', function(event) {
-   event.preventDefault();
+form.addEventListener('submit', function(event) {
+   event.preventDefault(); // Previene el envío por defecto
 
-   btn.value = 'Sending...';
+   // --- INICIO DE LA VALIDACIÓN ---
+   const recaptchaResponse = grecaptcha.getResponse();
+
+   if (recaptchaResponse.length === 0) {
+     // Si el reCAPTCHA está vacío, muestra una alerta y no hagas nada más.
+     alert('Por favor, completa el reCAPTCHA ("No soy un robot").');
+     return; 
+   }
+   // --- FIN DE LA VALIDACIÓN ---
+
+   // Si el reCAPTCHA se completó, continúa con el envío.
+   
+   // Usamos el texto original del botón
+   const originalBtnText = btn.textContent; 
+   btn.textContent = 'Enviando...'; // Cambia el texto del botón
+   btn.disabled = true; // Deshabilita el botón
 
    const serviceID = 'default_service';
    const templateID = 'template_ygh40cq';
 
    emailjs.sendForm(serviceID, templateID, this)
     .then(() => {
-      btn.value = 'Send Email';
-      alert('Sent!');
+      btn.textContent = originalBtnText; // Restaura el texto
+      btn.disabled = false; // Rehabilita el botón
+      alert('¡Mensaje enviado correctamente!');
+      
+      // Resetea el formulario y el reCAPTCHA
+      grecaptcha.reset();
+      form.reset();
     }, (err) => {
-      btn.value = 'Send Email';
-      alert(JSON.stringify(err));
+      btn.textContent = originalBtnText; // Restaura el texto
+      btn.disabled = false; // Rehabilita el botón
+      alert('Hubo un error al enviar el mensaje: ' + JSON.stringify(err));
+      
+      // Resetea el reCAPTCHA también en caso de error
+      grecaptcha.reset();
     });
 });
 </script>
