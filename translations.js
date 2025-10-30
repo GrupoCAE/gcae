@@ -27,7 +27,6 @@ const translations = {
         form_subject: "Asunto",
         form_message: "Mensaje",
         form_submit: "Enviar Mensaje",
-        form_note: "Nota: Este es un formulario de ejemplo. Se necesita configuración de backend para enviar correos y validar reCAPTCHA.",
         google_form_alt: "O utiliza nuestro formulario de Google:",
         footer_rights: "Todos los derechos reservados.",
 
@@ -63,7 +62,6 @@ const translations = {
         form_subject: "Subject",
         form_message: "Message",
         form_submit: "Send Message",
-        form_note: "Note: This is a sample form. Backend setup is required for email sending and reCAPTCHA validation.",
         google_form_alt: "Or use our Google Form:",
         footer_rights: "All rights reserved.",
 
