@@ -301,11 +301,11 @@
           grecaptcha.reset(); // Resetea el reCAPTCHA invisible
           form.reset();      // Limpia el formulario
           
-          // 2. Oculta el mensaje después de 3 segundos (3000 ms)
+          // 2. Oculta el mensaje después de 5 segundos (5000 ms)
           setTimeout(() => {
             successMsgDiv.classList.add('hidden');
             successMsgDiv.textContent = ''; // Limpia el texto
-          }, 3000);
+          }, 5000);
           // --- FIN LÓGICA DE ÉXITO ---
           
         }, (err) => {
