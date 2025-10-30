@@ -56,7 +56,7 @@
                   </defs>
                   <g stroke="url(#brainGradient)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M32 2 C18 2 6 14 6 28 C6 38 13 48 22 52 L20 62"/>
-                    <path d;="M32 2 C46 2 58 14 58 28 C58 40 50 50 42 53 M44 56 L46 62"/>
+                    <path d="M32 2 C46 2 58 14 58 28 C58 40 50 50 42 53 M44 56 L46 62"/>
                     <path d="M22 52 A 20 20 0 0 0 42 53"/>
                     <circle cx="12" cy="28" r="4" fill="url(#brainGradient)" stroke="none"/>
                     <circle cx="28" cy="42" r="4" fill="url(#brainGradient)" stroke="none"/>
@@ -176,7 +176,7 @@
                     </div>
 
                     <div id="form-success-message"
-                         class="hidden p-3 rounded-md bg-green-100 text-green-700 font-medium text-center">
+                         class="hidden opacity-0 transition-opacity duration-500 ease-in-out p-3 rounded-md bg-green-100 text-green-700 font-medium text-center">
                          </div>
                     <div>
                         <button type="submit" id="button"
@@ -185,7 +185,7 @@
                             Enviar Mensaje
                         </button>
                     </div>
-                </form>
+                    </form>
             </div>
         </section>
 
@@ -202,138 +202,14 @@
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
     </a>
 
-    <script src="translations.js"></script>
-    
-    <script>
-        // --- Language Content ---
-        // La variable 'translations' ahora viene de 'translations.js'
-
-        let currentLanguage = 'es'; // Default language
-
-        // Function to change language
-        function changeLanguage(lang) {
-            if (!translations[lang]) return; // Exit if language not found
-
-            currentLanguage = lang;
-            document.documentElement.lang = lang; // Update HTML lang attribute
-
-            // Update text content based on data-lang-key
-            document.querySelectorAll('[data-lang-key]').forEach(element => {
-                const key = element.getAttribute('data-lang-key');
-                if (translations[lang][key]) {
-                    element.textContent = translations[lang][key];
-                }
-            });
-
-            // Update language button styles
-            const esButton = document.getElementById('lang-es');
-            const enButton = document.getElementById('lang-en');
-            if (lang === 'es') {
-                esButton.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
-                esButton.classList.add('bg-blue-600', 'text-white');
-                enButton.classList.remove('bg-blue-600', 'text-white');
-                enButton.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
-            } else {
-                enButton.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
-                enButton.classList.add('bg-blue-600', 'text-white');
-                esButton.classList.remove('bg-blue-600', 'text-white');
-                esButton.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
-            }
-        }
-
-        // --- Back to Top Button Logic ---
-        const backToTopButton = document.getElementById('back-to-top');
-        window.onscroll = function() {
-            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
-                backToTopButton.classList.add('show');
-            } else {
-                backToTopButton.classList.remove('show');
-            }
-        };
-
-        // --- Footer Year ---
-        document.getElementById('current-year').textContent = new Date().getFullYear();
-
-        // --- Initial Language Setup ---
-         changeLanguage(currentLanguage); // Set default language on load
-
-    </script>
     <script type="text/javascript"
       src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
-    <script type="text/javascript">
-      emailjs.init('B2i4b0UQcAco5iAUz')
-    </script>
-
-    <script type="text/javascript">
-    // --- INICIO SCRIPT FORMULARIO reCAPTCHA v2 Invisible ---
-
-    // Referencias a los elementos
-    const btn = document.getElementById('button');
-    const form = document.getElementById('form');
-    // Obtenemos la referencia al nuevo div de éxito
-    const successMsgDiv = document.getElementById('form-success-message');
-    let originalBtnText = btn.textContent; // Texto original del botón
-
-    /*
-     * 1. Esta es la función 'callback' que Google llamará (gracias a 'data-callback="onSubmitForm"')
-     */
-    function onSubmitForm(token) {
-       
-       // Actualiza el texto del botón (por si cambió el idioma)
-       originalBtnText = document.getElementById('button').textContent;
-       btn.textContent = 'Enviando...'; 
-       btn.disabled = true; 
-
-       const serviceID = 'default_service';
-       const templateID = 'template_ygh40cq';
-
-       emailjs.sendForm(serviceID, templateID, form)
-        .then(() => {
-          // --- INICIO LÓGICA DE ÉXITO ---
-          btn.textContent = originalBtnText; 
-          btn.disabled = false; 
-          
-          // 1. Muestra el mensaje de éxito en el div
-          successMsgDiv.textContent = translations[currentLanguage].form_alert_success;
-          successMsgDiv.classList.remove('hidden');
-          
-          grecaptcha.reset(); // Resetea el reCAPTCHA invisible
-          form.reset();      // Limpia el formulario
-          
-          // 2. Oculta el mensaje después de 5 segundos (5000 ms)
-          setTimeout(() => {
-            successMsgDiv.classList.add('hidden');
-            successMsgDiv.textContent = ''; // Limpia el texto
-          }, 5000);
-          // --- FIN LÓGICA DE ÉXITO ---
-          
-        }, (err) => {
-          // Error (sigue usando alert para errores)
-          btn.textContent = originalBtnText; 
-          btn.disabled = false; 
-          
-          alert(translations[currentLanguage].form_alert_error + JSON.stringify(err));
-          
-          grecaptcha.reset(); // Resetea aunque falle
-        });
-    }
-
-    /*
-     * 2. Este es el 'listener' del formulario.
-     */
-    form.addEventListener('submit', function(event) {
-       event.preventDefault(); // Siempre previene el envío normal
-       
-       // Oculta cualquier mensaje de éxito anterior al intentar un nuevo envío
-       successMsgDiv.classList.add('hidden');
-       successMsgDiv.textContent = '';
-       
-       // Llama a Google para que valide.
-       grecaptcha.execute();
-    });
-
-    // --- FIN SCRIPT FORMULARIO ---
-    </script>
+    <script src="translations.js"></script>
+    
+    <script src="site.js"></script>
+    
+    <script src="form.js"></script>
+    
     </body>
 </html>
