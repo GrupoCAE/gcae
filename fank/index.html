@@ -1,0 +1,867 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FANK - Tu Tienda Juvenil (Proyecto escolar)</title>
+  
+  <style>
+    /* 6. Nueva paleta de colores (Juvenil Femenino) */
+    :root{
+      --accent: #E95D80; /* Rosa/Coral principal */
+      --accent-dark: #D62F5A; /* Rosa más oscuro para precios y hover */
+      --card: #fff;
+      --muted: #888;
+      --bg: #FFF8FA; /* Fondo rosa muy pálido */
+      --text: #333;
+      --shadow: 0 4px 12px rgba(0,0,0,.08);
+      --shadow-lg: 0 10px 30px rgba(0,0,0,.12);
+    }
+    body{
+      font-family: Arial, Helvetica, sans-serif;
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+    }
+    header{
+      background: linear-gradient(90deg, #ffffff, #FEF8FA);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      /* Fijamos el header para que el botón del carrito esté siempre visible */
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    /* 5. Nombre del Portal cambiado a FANK */
+    header h1{ 
+      margin: 0; 
+      font-size: 24px;
+      color: var(--accent);
+      font-weight: 800;
+    }
+    
+    /* 3. Botón para abrir el carrito modal */
+    .cart-button {
+      padding: 8px 16px;
+      background: var(--accent);
+      color: white;
+      border: 0;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .container{max-width: 1100px; margin: 28px auto; padding: 0 16px;}
+    
+    /* 1. Diseño Responsivo (el grid ya era responsive, se mantiene) */
+    .grid{
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 24px;
+    }
+    .card{
+      background: var(--card);
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    /* 2. Imágenes proporcionales (Responsive) */
+    .card img{
+      width: 100%;
+      /* height: 220px; <-- Eliminado para ser responsivo */
+      aspect-ratio: 1 / 1; /* Mantiene la proporción 1:1 */
+      object-fit: cover;
+      border-radius: 6px;
+      background: #eee;
+    }
+    .meta{display: flex; align-items: center; justify-content: space-between;}
+    .price{font-weight: 700; color: var(--accent-dark);}
+    
+    button.add{
+      padding: 8px 12px;
+      background: var(--accent);
+      color: white;
+      border: 0;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    button.add:hover{ background: var(--accent-dark); }
+    button.add:active{transform: translateY(1px)}
+
+    /* 3. Carrito como ventana superficial (Off-canvas) */
+    
+    /* Fondo oscuro para el modal */
+    .cart-overlay {
+      position: fixed;
+      inset: 0; /* (top:0, left:0, right:0, bottom:0) */
+      background: rgba(0,0,0,0.5);
+      z-index: 998;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .cart-overlay.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Panel del carrito */
+    aside.cart{
+      position: fixed;
+      right: 0; 
+      top: 0;
+      width: 360px; /* Ancho del panel */
+      max-width: 90vw; /* Máximo en móviles */
+      height: 100vh; /* Alto total */
+      background: var(--card);
+      box-shadow: var(--shadow-lg);
+      
+      /* Oculto por defecto */
+      transform: translateX(100%);
+      transition: transform 0.3s ease-out;
+      
+      /* Estructura interna */
+      display: flex;
+      flex-direction: column;
+      z-index: 999;
+    }
+    aside.cart.is-open{
+      transform: translateX(0);
+    }
+    
+    .cart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid #eee;
+    }
+    .cart-header h2 { margin: 0; font-size: 18px; }
+    .cart-header .close-btn {
+      font-size: 24px;
+      font-weight: 700;
+      background: transparent;
+      border: 0;
+      cursor: pointer;
+      color: var(--muted);
+    }
+    .cart-header .close-btn:hover { color: var(--text); }
+    
+    /* Hacemos que la lista de productos sea la única parte con scroll */
+    .cart-list{
+      flex: 1; /* Ocupa todo el espacio disponible */
+      overflow-y: auto; /* Permite scroll */
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px;
+    }
+    
+    /* Estilos de los items (ligeramente ajustados) */
+    #emptyNote { padding: 16px; text-align: center; }
+    .cart-item{display: flex; gap: 12px; align-items: center;}
+    .cart-item img{width: 60px; height: 60px; object-fit: cover; border-radius: 6px}
+    .qty{display: flex; gap: 6px; align-items: center}
+    .qty button{padding: 4px 8px; cursor: pointer; border: 1px solid #ddd; background: #fff;}
+    
+    /* El sumario ahora va fijo abajo del panel */
+    .summary{
+      border-top: 1px solid #eee;
+      padding: 16px;
+      background: #fdfdfd;
+    }
+    
+    .muted{color: var(--muted); font-size: 13px;}
+    
+    footer{
+      margin: 40px 0 80px; 
+      text-align: center; 
+      color: var(--muted); 
+      font-size: 14px;
+    }
+    
+    /* --- INICIO: ESTILOS DEL MODAL PERSONALIZADO --- */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease-in-out;
+    }
+    .modal-overlay.is-visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: var(--shadow-lg);
+      width: 100%;
+      max-width: 450px;
+      transform: scale(0.95);
+      transition: transform 0.2s ease-in-out;
+    }
+    .modal-overlay.is-visible .modal-content {
+      transform: scale(1);
+    }
+
+    #modalTitle {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 0 0 12px 0;
+      color: var(--accent-dark);
+    }
+    
+    #modalBody {
+      font-size: 15px;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+    #modalBody small {
+      color: var(--muted);
+      display: block;
+      margin-top: 8px;
+    }
+    
+    #modalFooter {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    
+    #modalFooter button,
+    .modal-button {
+      padding: 10px 18px;
+      border: 0;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    
+    /* Botón principal (Aceptar, Pagar) */
+    #modalFooter button.primary,
+    .modal-button.primary {
+      background: var(--accent);
+      color: white;
+    }
+    #modalFooter button.primary:hover,
+    .modal-button.primary:hover {
+      background: var(--accent-dark);
+    }
+    
+    /* Botón secundario (Cancelar) */
+    #modalFooter button.secondary,
+    .modal-button.secondary {
+      background: #eee;
+      color: var(--text);
+      border: 1px solid #ddd;
+    }
+    #modalFooter button.secondary:hover,
+    .modal-button.secondary:hover {
+      background: #e0e0e0;
+    }
+    
+    #challengeAnswerInput {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+      box-sizing: border-box; /* Asegura que el padding no afecte el ancho */
+      margin-bottom: 12px;
+    }
+
+    /* --- FIN: ESTILOS DEL MODAL PERSONALIZADO --- */
+
+    @media(max-width: 600px){
+      header h1 { font-size: 20px; }
+      .cart-button { font-size: 12px; padding: 6px 10px; }
+      
+      /* Ajustamos el modal para móviles */
+      .modal-content {
+        padding: 20px;
+      }
+      #modalTitle { font-size: 18px; }
+      #modalBody { font-size: 14px; }
+      #modalFooter { flex-direction: column-reverse; gap: 8px; }
+      #modalFooter button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cart-overlay" id="cartOverlay"></div>
+
+  <!-- INICIO: Estructura del Modal Personalizado -->
+  <div class="modal-overlay" id="customModalOverlay">
+    <div class="modal-content">
+      <h3 id="modalTitle"></h3>
+      <div id="modalBody"></div>
+      <div id="modalFooter"></div>
+    </div>
+  </div>
+  <!-- FIN: Estructura del Modal Personalizado -->
+
+  <header>
+    <h1>FANK</h1>
+    <button class="cart-button" id="openCartBtn">
+      Ver Carrito (<span id="cartCount">0</span>)
+    </button>
+  </header>
+
+  <div class="container">
+    <section>
+      <h2>Productos</h2>
+      <div class="grid" id="catalog">
+        <!-- Los productos se mantienen igual que en tu archivo original -->
+        <div class="card" data-id="p1" data-price="1200">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/d/db/Shiny_pleated_skirt.jpg" alt="Falda plisada" onerror="this.src='https://placehold.co/240x240/FFF8FA/E95D80?text=FANK'">
+          <strong>Falda plisada / otoño</strong>
+          <div class="meta">
+            <div class="muted">Falda larga plisada</div>
+            <div class="price">$1,200</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="muted">Tallas: S, M, L</div>
+            <button class="add" onclick="addToCart('p1')">Agregar</button>
+          </div>
+        </div>
+
+        <div class="card" data-id="p2" data-price="1400">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/5/5f/Blouse.jpg" alt="Blusa ligera" onerror="this.src='https://placehold.co/240x240/FFF8FA/E95D80?text=FANK'">
+          <strong>Blusa ligera / primavera</strong>
+          <div class="meta">
+            <div class="muted">Manga 3/4, liviana</div>
+            <div class="price">$1,400</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="muted">Colores: blanco, rosa</div>
+            <button class="add" onclick="addToCart('p2')">Agregar</button>
+          </div>
+        </div>
+
+        <div class="card" data-id="p3" data-price="3000">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/1/10/Denim_Jacket_%2851079649933%29.jpg" alt="Chamarra de mezclilla" onerror="this.src='https://placehold.co/240x240/FFF8FA/E95D80?text=FANK'">
+          <strong>Chamarra denim / primavera-otoño</strong>
+          <div class="meta">
+            <div class="muted">Chaqueta vaquera clásica</div>
+            <div class="price">$3,000</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="muted">Tallas: S,M,L</div>
+            <button class="add" onclick="addToCart('p3')">Agregar</button>
+          </div>
+        </div>
+
+        <div class="card" data-id="p4" data-price="2200">
+          <img src="https://u-mercari-images.mercdn.net/photos/m65024568736_2.jpg" alt="Vestido veraniego" onerror="this.src='https://placehold.co/240x240/FFF8FA/E95D80?text=FANK'">
+          <strong>Vestido veraniego / verano</strong>
+          <div class="meta">
+            <div class="muted">Sundress ligera</div>
+            <div class="price">$2,200</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="muted">Colores: varios</div>
+            <button class="add" onclick="addToCart('p4')">Agregar</button>
+          </div>
+        </div>
+
+        <div class="card" data-id="p5" data-price="3600">
+          <img src="https://d2bzx2vuetkzse.cloudfront.net/fit-in/0x450/unshoppable_producs/e5eb2c4d-892b-42a6-b595-0e89108b606b.jpeg" alt="Suéter" onerror="this.src='https://placehold.co/240x240/FFF8FA/E95D80?text=FANK'">
+          <strong>Suéter tejido / invierno</strong>
+          <div class="meta">
+            <div class="muted">Cálido, estilo juvenil</div>
+            <div class="price">$3,600</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="muted">Unisex</div>
+            <button class="add" onclick="addToCart('p5')">Agregar</button>
+          </div>
+        </div>
+
+        <div class="card" data-id="p6" data-price="1800">
+          <img src="https://hips.hearstapps.com/vader-prod.s3.amazonaws.com/1709651001-01165032711-e1-65e73417b2bac.jpg?crop=0.814xw:0.543xh;0.0946xw,0.236xh&resize=980:*" alt="Shorts casual" onerror="this.src='https://placehold.co/240x240/FFF8FA/E95D80?text=FANK'">
+          <strong>Shorts casual / verano</strong>
+          <div class="meta">
+            <div class="muted">Corte alto, cómodo</div>
+            <div class="price">$1,800</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="muted">Colores: azul, negro</div>
+            <button class="add" onclick="addToCart('p6')">Agregar</button>
+          </div>
+        </div>
+
+        <div class="card" data-id="p7" data-price="4200">
+          <img src="https://content25.lecturas.com/medio/2023/10/23/zara-ref-6147-178_389a6be5_231023175822_1440x2160.jpg" alt="Jeans juvenil" onerror="this.src='https://placehold.co/240x240/FFF8FA/E95D80?text=FANK'">
+          <strong>Jeans corte juvenil / todo el año</strong>
+          <div class="meta">
+            <div class="muted">Denim elástico</div>
+            <div class="price">$4,200</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="muted">Tallas: 26-32</div>
+            <button class="add" onclick="addToCart('p7')">Agregar</button>
+          </div>
+        </div>
+
+        <div class="card" data-id="p8" data-price="9000">
+          <img src="https://static.zara.net/assets/public/adf5/864d/8e4444c4ba9b/9e45f791815a/00935667712-e1/00935667712-e1.jpg" alt="Hoodie premium" onerror="this.src='https://placehold.co/240x240/FFF8FA/E95D80?text=FANK'">
+          <strong>Hoodie premium / otoño-invierno</strong>
+          <div class="meta">
+            <div class="muted">Forro suave, capucha</div>
+            <div class="price">$9,000</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="muted">Colores: gris, negro</div>
+            <button class="add" onclick="addToCart('p8')">Agregar</button>
+          </div>
+        </div>
+
+        <div class="card" data-id="p9" data-price="2500">
+          <img src="https://down-mx.img.susercontent.com/file/dd51766803243e95ae4d0d9875c0f7d6" alt="Chamarra abrigadora" onerror="this.src='https://placehold.co/240x240/FFF8FA/E95D80?text=FANK'">
+          <strong>Chamarra forrada / invierno</strong>
+          <div class="meta">
+            <div class="muted">Forro polar</div>
+            <div class="price">$2,500</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="muted">Ajuste oversize</div>
+            <button class="add" onclick="addToCart('p9')">Agregar</button>
+          </div>
+        </div>
+
+        <div class="card" data-id="p10" data-price="1300">
+          <img src="https://media.vogue.mx/photos/62b31cf9607d4a73b6557ca7/master/w_1600%2Cc_limit/top_2106_03.png" alt="Top corto" onerror="this.src='https://placehold.co/240x240/FFF8FA/E95D80?text=FANK'">
+          <strong>Crop top / verano-primavera</strong>
+          <div class="meta">
+            <div class="muted">Top corto, tendencia</div>
+            <div class="price">$1,300</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="muted">Tallas: XS,S,M</div>
+            <button class="add" onclick="addToCart('p10')">Agregar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="cart" id="cart">
+      <div class="cart-header">
+        <h2>Carrito</h2>
+        <button class="close-btn" id="closeCartBtn" aria-label="Cerrar carrito">&times;</button>
+      </div>
+      
+      <div class="cart-list" id="cartListContainer">
+        <div class="muted" id="emptyNote">Aún no hay productos en el carrito.</div>
+        <div id="cartList" style="display:none; flex-direction: column; gap: 12px;"></div>
+      </div>
+
+      <div class="summary">
+        <div class="muted">Subtotal: <span id="subtotalText">$0</span></div>
+        <!-- Descuento (reto) se aplicará sobre el subtotal si se gana -->
+        <div class="muted">Descuento estándar: <strong id="discountText">$0</strong></div>
+        <div style="font-weight:800; margin-top:6px; font-size: 18px; color: var(--accent-dark)">
+          Total: <span id="totalText">$0</span>
+        </div>
+        <div class="muted" style="margin-top:8px; font-size:13px">
+          Reglas de descuento estándar:
+          <ul style="margin:6px 0 0 18px; padding:0;">
+            <li>Mayor a $2,000 → 15%</li>
+            <li>Mayor a $5,000 → 20%</li>
+            <li>Mayor a $10,000 → 35%</li>
+            <li>Mayor a $20,000 → 40%</li>
+          </ul>
+        </div>
+        <div style="margin-top:10px; display:flex; gap:8px;">
+          <button onclick="clearCart()" style="flex:1;padding:8px;border-radius:6px;border:1px solid #ddd;background:#fff;cursor:pointer">Vaciar</button>
+          <button onclick="checkout()" style="flex:1;padding:8px;border-radius:6px;border:0;background:var(--accent);color:#fff;cursor:pointer;font-weight:700">Pagar</button>
+        </div>
+      </div>
+    </aside>
+
+    <footer>
+      Proyecto escolar para FANK — catálogo estático sin conexión a base de datos.
+    </footer>
+  </div>
+
+  <script>
+    /* 1. IMÁGENES ACTUALIZADAS DE WIKIMEDIA COMMONS */
+    const products = {
+      p1:{id:'p1', title:'Falda plisada', price:1200, img:'https://upload.wikimedia.org/wikipedia/commons/d/db/Shiny_pleated_skirt.jpg'},
+      p2:{id:'p2', title:'Blusa ligera', price:1400, img:'https://upload.wikimedia.org/wikipedia/commons/5/5f/Blouse.jpg'},
+      p3:{id:'p3', title:'Chamarra denim', price:3000, img:'https://upload.wikimedia.org/wikipedia/commons/1/10/Denim_Jacket_%2851079649933%29.jpg'},
+      p4:{id:'p4', title:'Vestido veraniego', price:2200, img:'https://u-mercari-images.mercdn.net/photos/m65024568736_2.jpg'},
+      p5:{id:'p5', title:'Suéter tejido', price:3600, img:'https://d2bzx2vuetkzse.cloudfront.net/fit-in/0x450/unshoppable_producs/e5eb2c4d-892b-42a6-b595-0e89108b606b.jpeg'},
+      p6:{id:'p6', title:'Shorts casual', price:1800, img:'https://hips.hearstapps.com/vader-prod.s3.amazonaws.com/1709651001-01165032711-e1-65e73417b2bac.jpg?crop=0.814xw:0.543xh;0.0946xw,0.236xh&resize=980:*'},
+      p7:{id:'p7', title:'Jeans juvenil', price:4200, img:'https://content25.lecturas.com/medio/2023/10/23/zara-ref-6147-178_389a6be5_231023175822_1440x2160.jpg'},
+      p8:{id:'p8', title:'Hoodie premium', price:9000, img:'https://static.zara.net/assets/public/adf5/864d/8e4444c4ba9b/9e45f791815a/00935667712-e1/00935667712-e1.jpg'},
+      p9:{id:'p9', title:'Chamarra forrada', price:2500, img:'https://down-mx.img.susercontent.com/file/dd51766803243e95ae4d0d9875c0f7d6'},
+      p10:{id:'p10', title:'Crop top', price:1300, img:'https://media.vogue.mx/photos/62b31cf9607d4a73b6557ca7/master/w_1600%2Cc_limit/top_2106_03.png'}
+    };
+
+    // carrito: {productId: {product, qty}}
+    let cart = {};
+    
+    // --- INICIO: NUEVAS VARIABLES GLOBALES ---
+    let challengeAttempted = false; // Controla si el reto ya se ofreció
+    let currentChallenge = null; // Almacena el reto actual seleccionado
+    
+    // Lista de retos matemáticos
+    const mathChallenges = [
+      { question: "¿Cuáles son los primeros 5 dígitos de PI? ", answer: "3.1416" },
+      { question: "¿Cuál es la fórmula del área de un triángulo? b = base, h = altura", answer: "b*h/2" },
+      { question: "Resuelve la multiplicación: 17 * 23", answer: "391" },
+      { question: "¿Qué número sigue en la secuencia? 2, 6, 12, 20, 30, 42, 56, ___", answer: "72" },
+      { question: "Resuelve esta operación: 10 + 5 × 4 − 2", answer: "28" },
+      { question: "¿Cuál es la fórmula del área de un círculo? (pi = π , r = radio, ^ para potencias)", answer: "pi*r^2" }
+    ];
+    // --- FIN: NUEVAS VARIABLES GLOBALES ---
+
+
+    // Referencias a los elementos del carrito modal
+    const cartPanel = document.getElementById('cart');
+    const cartOverlay = document.getElementById('cartOverlay');
+    const cartCount = document.getElementById('cartCount');
+    
+    // Referencias al modal personalizado
+    const modalOverlay = document.getElementById('customModalOverlay');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    const modalFooter = document.getElementById('modalFooter');
+
+
+    function formatMoney(n){ return '$' + n.toLocaleString('es-MX'); }
+
+    // Funciones para abrir y cerrar el carrito
+    function openCart() {
+      cartPanel.classList.add('is-open');
+      cartOverlay.classList.add('is-open');
+    }
+
+    function closeCart() {
+      cartPanel.classList.remove('is-open');
+      cartOverlay.classList.remove('is-open');
+    }
+
+    // Asignar eventos a los botones
+    document.getElementById('openCartBtn').onclick = openCart;
+    document.getElementById('closeCartBtn').onclick = closeCart;
+    cartOverlay.onclick = closeCart;
+
+
+    function addToCart(id){
+      if(!products[id]) return;
+      if(!cart[id]) cart[id] = { product: products[id], qty: 0 };
+      cart[id].qty++;
+      renderCart();
+      openCart(); // Abrir el carrito al agregar
+    }
+
+    function removeFromCart(id){
+      if(!cart[id]) return;
+      delete cart[id];
+      renderCart();
+    }
+
+    function changeQty(id, delta){
+      if(!cart[id]) return;
+      cart[id].qty += delta;
+      if(cart[id].qty <= 0) delete cart[id];
+      renderCart();
+    }
+
+    function renderCart(){
+      const cartList = document.getElementById('cartList');
+      const emptyNote = document.getElementById('emptyNote');
+      cartList.innerHTML = '';
+      
+      const items = Object.values(cart);
+      let totalItems = 0;
+      
+      if(items.length === 0){
+        cartList.style.display = 'none';
+        emptyNote.style.display = 'block';
+      } else {
+        cartList.style.display = 'flex';
+        emptyNote.style.display = 'none';
+
+        items.forEach(entry=>{
+          const {product, qty} = entry;
+          totalItems += qty;
+          const div = document.createElement('div');
+          div.className = 'cart-item';
+          div.innerHTML = `
+            <img src="${product.img}" alt="${product.title}" onerror="this.src='https://placehold.co/60x60/FFF8FA/E95D80?text=F'">
+            <div style="flex:1">
+              <div style="font-weight:700">${product.title}</div>
+              <div class="muted" style="font-size:13px">${formatMoney(product.price)} • ${qty} unidad(es)</div>
+              <div class="qty" style="margin-top:6px">
+                <button onclick="changeQty('${product.id}', -1)">-</button>
+                <div style="min-width:18px;text-align:center">${qty}</div>
+                <button onclick="changeQty('${product.id}', 1)">+</button>
+                <button style="margin-left:8px;color:#c0392b;background:transparent;border:0;cursor:pointer" onclick="removeFromCart('${product.id}')">Eliminar</button>
+              </div>
+            </div>
+          `;
+          cartList.appendChild(div);
+        });
+      }
+      
+      cartCount.textContent = totalItems; // Actualiza el contador del botón
+      updateTotals();
+    }
+
+    function calcSubtotal(){
+      return Object.values(cart).reduce((s,e)=>s + e.product.price * e.qty, 0);
+    }
+
+    // Descuento estándar
+    function calcDiscount(subtotal){
+      if(subtotal > 20000) return 0.40;
+      if(subtotal > 10000) return 0.35;
+      if(subtotal > 5000) return 0.20;
+      if(subtotal > 2000) return 0.15;
+      return 0.0;
+    }
+
+    function updateTotals(specialRate = null) {
+      const subtotal = calcSubtotal();
+      let rate = 0.0;
+      let discount = 0;
+      let total = subtotal;
+
+      if (specialRate !== null) {
+        // Si hay una tasa especial (0% o 50%), se usa esa
+        rate = specialRate;
+        discount = Math.round(subtotal * rate);
+        total = subtotal - discount;
+        // Mostramos el descuento estándar como $0 en este caso
+        document.getElementById('discountText').textContent = formatMoney(0) + " (Reto activo)";
+      } else {
+        // Si no, se usa el descuento estándar
+        rate = calcDiscount(subtotal);
+        discount = Math.round(subtotal * rate);
+        total = subtotal - discount;
+        document.getElementById('discountText').textContent = formatMoney(discount) + (rate > 0 ? ` (${(rate*100).toFixed(0)}%)` : '');
+      }
+
+      document.getElementById('subtotalText').textContent = formatMoney(subtotal);
+      
+      // Si se ganó el reto, mostramos una línea de "Descuento Reto"
+      if (specialRate === 0.50) {
+        document.getElementById('discountText').innerHTML = `Descuento estándar: $0 <br> <strong style="color: green;">Descuento Reto: ${formatMoney(discount)} (50%)</strong>`;
+      } else if (specialRate === 0.0) {
+         document.getElementById('discountText').innerHTML = `Descuento estándar: $0 <br> <strong style="color: red;">Descuento Reto: $0 (0%)</strong>`;
+      }
+
+      document.getElementById('totalText').textContent = formatMoney(total);
+    }
+
+    /* --- INICIO: NUEVO SISTEMA DE MODAL --- */
+    
+    function showModal(title, bodyHTML, footerHTML) {
+      modalTitle.textContent = title;
+      modalBody.innerHTML = bodyHTML;
+      modalFooter.innerHTML = footerHTML;
+      modalOverlay.classList.add('is-visible');
+    }
+
+    function hideModal() {
+      modalOverlay.classList.remove('is-visible');
+    }
+
+    // 1. Reemplazo de confirm() para Vaciar Carrito
+    function clearCart(){
+      if (Object.keys(cart).length === 0) {
+        showModal("Carrito Vacío", "El carrito ya está vacío.", '<button class="primary" onclick="hideModal()">Aceptar</button>');
+        return;
+      }
+
+      const subtotal = calcSubtotal();
+      const rate = calcDiscount(subtotal);
+      let message = "¿Estás seguro de vaciar tu carrito?";
+      if (rate > 0) {
+        message = "Estas seguro de vaciar tu carrito, ya que si lo haces perderás el descuento acumulado.";
+      }
+
+      showModal(
+        "Vaciar Carrito", 
+        message, 
+        '<button class="secondary" onclick="hideModal()">Cancelar</button>' +
+        '<button class="primary" onclick="confirmClearCart()">Confirmar</button>'
+      );
+    }
+
+    function confirmClearCart(resetChallenge = false) {
+      cart = {};
+      if (resetChallenge) {
+        challengeAttempted = false; // Resetea el reto si se completa la compra
+      }
+      renderCart();
+      hideModal();
+    }
+    
+    // 2. Lógica de Pago (Checkout)
+    function checkout(){
+      const subtotal = calcSubtotal();
+      if(subtotal === 0){
+        showModal("Carrito Vacío", "Tu carrito está vacío. Añade productos para continuar.", '<button class="primary" onclick="hideModal()">Aceptar</button>');
+        return;
+      }
+
+      // Si ya intentó el reto, va al pago normal
+      if (challengeAttempted) {
+        processNormalPayment();
+        return;
+      }
+
+      // Si no ha intentado el reto, se lo ofrece
+      showModal(
+        "¡Reto por Descuento!",
+        "¿Aceptas un reto matemático por un <b>50% DE DESCUENTO</b> en tu total?" +
+        "<small><b>¡Cuidado!</b> Si aceptas y fallas, perderás todos los descuentos estándar acumulados (15%-40%) y pagarás el subtotal completo.</small>",
+        '<button class="secondary" onclick="declineChallenge()">No, gracias</button>' +
+        '<button class="primary" onclick="acceptChallenge()">¡Acepto el Reto!</button>'
+      );
+    }
+
+    function declineChallenge() {
+      challengeAttempted = true; // Cuenta como intento, aunque lo rechace
+      hideModal();
+      processNormalPayment();
+    }
+
+    function acceptChallenge() {
+      // Seleccionar un reto al azar
+      const challengeIndex = Math.floor(Math.random() * mathChallenges.length);
+      currentChallenge = mathChallenges[challengeIndex];
+      
+      showModal(
+        "Reto Matemático",
+        `<p style="font-size: 18px; text-align: center; margin-bottom: 16px;">${currentChallenge.question}</p>` +
+        '<input type="text" id="challengeAnswerInput" placeholder="Escribe tu respuesta aquí...">',
+        '<button class="secondary" onclick="hideModal()">Cancelar</button>' +
+        '<button class="primary" onclick="submitChallengeAnswer()">Enviar Respuesta</button>'
+      );
+      
+      // Hacemos focus en el input
+      setTimeout(() => document.getElementById('challengeAnswerInput').focus(), 100);
+    }
+    
+    function normalizeAnswer(answer) {
+      if (typeof answer !== 'string') return '';
+      return answer.trim().toLowerCase().replace(/\s+/g, ''); // Quita espacios y convierte a minúsculas
+    }
+
+    function submitChallengeAnswer() {
+      const userAnswer = document.getElementById('challengeAnswerInput').value;
+      const normalizedUserAnswer = normalizeAnswer(userAnswer);
+      const normalizedCorrectAnswer = normalizeAnswer(currentChallenge.answer);
+
+      challengeAttempted = true; // Ya lo intentó
+
+      if (normalizedUserAnswer === normalizedCorrectAnswer) {
+        // ¡GANÓ!
+        processSpecialPayment(0.50, "¡Respuesta Correcta!", "¡Felicidades! Has ganado un <b>50% de descuento</b> sobre tu subtotal.");
+      } else {
+        // PERDIÓ
+        processSpecialPayment(0.0, "Respuesta Incorrecta", `La respuesta correcta era: <b>${currentChallenge.answer}</b>. <br>Como se advirtió, has perdido tus descuentos estándar.`);
+      }
+    }
+
+    // Flujo de pago si RECHAZA o ya había jugado
+    function processNormalPayment() {
+      const subtotal = calcSubtotal();
+      const rate = calcDiscount(subtotal);
+      const discount = Math.round(subtotal * rate);
+      const total = subtotal - discount;
+      
+      updateTotals(); // Actualiza la vista del carrito con descuento estándar
+
+      showModal(
+        "Resumen de Pago",
+        `Procederás con el pago estándar. <br><br>` +
+        `Subtotal: ${formatMoney(subtotal)}<br>` +
+        `Descuento: ${formatMoney(discount)} (${(rate*100).toFixed(0)}%)<br>` +
+        `<b>Total a pagar: ${formatMoney(total)}</b>`,
+        '<button class="primary" onclick="completePurchase()">Pagar Ahora</button>'
+      );
+    }
+
+    // Flujo de pago si ACEPTA (gana o pierde)
+    function processSpecialPayment(rate, title, message) {
+      const subtotal = calcSubtotal();
+      const discount = Math.round(subtotal * rate);
+      const total = subtotal - discount;
+
+      // Actualiza visualmente el carrito con el descuento especial
+      updateTotals(rate); 
+
+      showModal(
+        title,
+        `${message} <br><br>` +
+        `Subtotal: ${formatMoney(subtotal)}<br>` +
+        `Descuento Reto: ${formatMoney(discount)} (${(rate*100).toFixed(0)}%)<br>` +
+        `<b>Total a pagar: ${formatMoney(total)}</b>`,
+        '<button class="primary" onclick="completePurchase()">Pagar Ahora</button>'
+      );
+    }
+
+    // Paso final de la compra
+    function completePurchase() {
+      showModal(
+        "¡Compra Exitosa!",
+        "Gracias por tu compra en FANK. <br><small>(Esto es una demo local sin pago real.)</small>",
+        '<button class="primary" onclick="finalizePurchase()">Entendido</button>'
+      );
+    }
+
+    function finalizePurchase() {
+      confirmClearCart(true); // Vacía el carrito y resetea el reto
+      closeCart();
+    }
+
+    /* --- FIN: NUEVO SISTEMA DE MODAL --- */
+
+
+    // Aviso al salir si hay un descuento activo (se mantiene)
+    window.addEventListener('beforeunload', function (e) {
+      // Solo avisar si no ha intentado el reto
+      if (challengeAttempted) return;
+      
+      const subtotal = calcSubtotal();
+      const rate = calcDiscount(subtotal);
+      
+      // Si el descuento es mayor a 0, activa el aviso
+      if (rate > 0) {
+        const confirmationMessage = '¡Espera! Si sales ahora, perderás tu descuento actual y la oportunidad del reto. ¿Estás seguro?';
+        e.returnValue = confirmationMessage; // Para navegadores modernos
+        return confirmationMessage;      // Para navegadores antiguos
+      }
+    });
+
+    // Inicializa el carrito al cargar
+    renderCart();
+  </script>
+</body>
+</html>
