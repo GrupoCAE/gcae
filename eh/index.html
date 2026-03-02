@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escáner de Productos</title>
+    <!-- Tailwind CSS para el diseño -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- html5-qrcode para la lectura de códigos de barras y QR -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <!-- Iconos Phosphor -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        /* Ajustes menores para el lector de video */
+        #reader video {
+            object-fit: cover;
+            border-radius: 0.5rem;
+        }
+        #reader {
+            border: none !important;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 flex items-center justify-center min-h-screen p-4 font-sans text-slate-800">
+
+    <!-- Contenedor Principal -->
+    <main class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md text-center border border-slate-100">
+        <div class="flex justify-center mb-6">
+            <div class="bg-blue-100 text-blue-600 p-3 rounded-full">
+                <i class="ph ph-scan text-4xl"></i>
+            </div>
+        </div>
+        <h1 class="text-2xl font-bold mb-2">Verificador de Productos</h1>
+        <p class="text-slate-500 mb-8 text-sm">Escanea el código de barras del producto para buscar su disponibilidad o redirigir a su página.</p>
+
+        <!-- Campo de Texto -->
+        <div class="mb-6 relative text-left">
+            <label for="barcodeInput" class="block text-sm font-semibold text-slate-700 mb-2">Código detectado</label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="ph ph-barcode text-slate-400 text-lg"></i>
+                </div>
+                <input type="text" id="barcodeInput" class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-slate-700 font-mono" placeholder="Esperando escaneo..." readonly>
+            </div>
+        </div>
+
+        <!-- Botón Scan Product -->
+        <button onclick="openScanner()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3.5 px-6 rounded-xl shadow-md shadow-blue-600/20 hover:shadow-lg hover:shadow-blue-600/40 active:transform active:scale-95 transition-all flex items-center justify-center gap-2">
+            <i class="ph ph-camera text-xl"></i>
+            Scan Product
+        </button>
+    </main>
+
+    <!-- Modal de la Cámara -->
+    <div id="scannerModal" class="fixed inset-0 bg-slate-900/80 z-50 hidden flex-col items-center justify-center p-4 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl w-full max-w-sm overflow-hidden relative shadow-2xl scale-95 transition-transform duration-300 flex flex-col" id="modalContent">
+            
+            <!-- Cabecera del Modal -->
+            <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-white z-10">
+                <h2 class="font-bold text-slate-800 flex items-center gap-2">
+                    <i class="ph ph-scan"></i> Escanear Código
+                </h2>
+                <button onclick="closeScanner()" class="text-slate-400 hover:text-red-500 transition-colors rounded-full p-1.5 hover:bg-red-50 focus:outline-none">
+                    <i class="ph ph-x text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Contenedor del Lector de Video -->
+            <div class="bg-black relative w-full aspect-square sm:aspect-[4/3] flex items-center justify-center overflow-hidden">
+                <div id="reader" class="w-full h-full"></div>
+                <!-- Animación de carga mientras se activa la cámara -->
+                <div id="scannerLoading" class="absolute inset-0 flex items-center justify-center text-white flex-col gap-3 z-0">
+                    <i class="ph ph-spinner animate-spin text-3xl"></i>
+                    <span class="text-sm font-medium">Iniciando cámara...</span>
+                </div>
+            </div>
+
+            <!-- Pie del Modal -->
+            <div class="p-4 text-center text-sm font-medium text-slate-600 bg-slate-50 border-t border-slate-200">
+                Apunta la cámara hacia el código de barras
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Mensaje (Alert personalizado) -->
+    <div id="messageModal" class="fixed inset-0 bg-slate-900/60 z-[60] hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-xs w-full p-6 text-center transform scale-95 transition-transform duration-300" id="messageContent">
+            
+            <!-- Icono de Advertencia Dinámico -->
+            <div id="messageIcon" class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-orange-100 mb-4">
+                <i class="ph ph-warning text-3xl text-orange-600"></i>
+            </div>
+            
+            <h3 id="messageTitle" class="text-xl font-bold text-slate-800 mb-2">Atención</h3>
+            <p id="messageText" class="text-slate-600 mb-6 font-medium">Código no localizado en la Base</p>
+            
+            <button onclick="closeMessage()" class="w-full bg-slate-800 text-white font-semibold py-3 px-4 rounded-xl hover:bg-slate-900 transition-colors shadow-md">
+                Entendido
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        let html5QrCode;
+        let isScanning = false;
+
+        // --- FUNCIONES DEL ESCÁNER ---
+
+        function openScanner() {
+            const modal = document.getElementById('scannerModal');
+            const modalContent = document.getElementById('modalContent');
+            const loading = document.getElementById('scannerLoading');
+            
+            // Limpiar campo
+            document.getElementById('barcodeInput').value = '';
+
+            // Mostrar Modal
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            loading.style.display = 'flex';
+            
+            // Forzar reflow para animación CSS
+            void modal.offsetWidth;
+            
+            modal.classList.remove('opacity-0');
+            modalContent.classList.remove('scale-95');
+
+            // Iniciar html5-qrcode
+            html5QrCode = new Html5Qrcode("reader");
+            
+            // Configuración del escáner: fps y tamaño de la caja de escaneo
+            const config = { 
+                fps: 10, 
+                qrbox: { width: 250, height: 150 },
+                aspectRatio: 1.0,
+                disableFlip: false 
+            };
+
+            // Intentar usar la cámara trasera ("environment")
+            html5QrCode.start(
+                { facingMode: "environment" },
+                config,
+                onScanSuccess,
+                onScanFailure
+            ).then(() => {
+                isScanning = true;
+                loading.style.display = 'none'; // Ocultar carga al iniciar el video
+            }).catch((err) => {
+                console.error("Error al iniciar la cámara:", err);
+                closeScanner();
+                showCustomMessage("Error de Cámara", "No se pudo acceder a la cámara. Por favor verifica los permisos.", "error");
+            });
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            // Se detectó un código exitosamente
+            document.getElementById('barcodeInput').value = decodedText;
+            
+            // Detener el escáner y procesar el resultado
+            closeScanner(() => {
+                processBarcode(decodedText);
+            });
+        }
+
+        function onScanFailure(error) {
+            // Este evento se dispara constantemente mientras busca, no hacemos nada aquí
+            // console.warn(`Code scan error = ${error}`);
+        }
+
+        function closeScanner(callback) {
+            const modal = document.getElementById('scannerModal');
+            const modalContent = document.getElementById('modalContent');
+
+            // Iniciar animación de salida
+            modal.classList.add('opacity-0');
+            modalContent.classList.add('scale-95');
+
+            const finalizeClose = () => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                
+                // Limpiar instancia del escáner
+                if (html5QrCode) {
+                    html5QrCode.clear();
+                }
+                
+                // Ejecutar callback si existe (ej. procesar el código)
+                if (callback && typeof callback === 'function') {
+                    callback();
+                }
+            };
+
+            // Detener la cámara si está activa
+            if (isScanning && html5QrCode) {
+                html5QrCode.stop().then(() => {
+                    isScanning = false;
+                    setTimeout(finalizeClose, 300);
+                }).catch((err) => {
+                    console.error("Error al detener escáner:", err);
+                    setTimeout(finalizeClose, 300);
+                });
+            } else {
+                setTimeout(finalizeClose, 300);
+            }
+        }
+
+        // --- LÓGICA DE NEGOCIO ---
+
+        function processBarcode(code) {
+            // Regla de Negocio Específica
+            if (code === '0031604136932') {
+                // Redirigir a Amazon
+                window.location.href = 'https://www.amazon.com.mx/Omega-Triple-Natural-Made-c%C3%A1psulas/dp/B096C96MKD';
+            } else {
+                // Código no reconocido
+                showCustomMessage("Atención", "Código no localizado en la Base", "warning");
+            }
+        }
+
+        // --- FUNCIONES DEL MODAL DE MENSAJE ---
+
+        function showCustomMessage(title, message, type = "warning") {
+            const msgModal = document.getElementById('messageModal');
+            const msgContent = document.getElementById('messageContent');
+            const msgTitle = document.getElementById('messageTitle');
+            const msgText = document.getElementById('messageText');
+            const msgIcon = document.getElementById('messageIcon');
+
+            // Configurar contenido
+            msgTitle.textContent = title;
+            msgText.textContent = message;
+
+            // Configurar estilos según el tipo
+            if(type === "error") {
+                msgIcon.className = "mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-red-100 mb-4";
+                msgIcon.innerHTML = '<i class="ph ph-x-circle text-3xl text-red-600"></i>';
+            } else {
+                msgIcon.className = "mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-orange-100 mb-4";
+                msgIcon.innerHTML = '<i class="ph ph-warning text-3xl text-orange-600"></i>';
+            }
+
+            // Mostrar Modal
+            msgModal.classList.remove('hidden');
+            msgModal.classList.add('flex');
+            
+            void msgModal.offsetWidth; // Reflow
+            
+            msgModal.classList.remove('opacity-0');
+            msgContent.classList.remove('scale-95');
+        }
+
+        function closeMessage() {
+            const msgModal = document.getElementById('messageModal');
+            const msgContent = document.getElementById('messageContent');
+
+            // Animación de salida
+            msgModal.classList.add('opacity-0');
+            msgContent.classList.add('scale-95');
+
+            setTimeout(() => {
+                msgModal.classList.add('hidden');
+                msgModal.classList.remove('flex');
+            }, 300);
+        }
+    </script>
+</body>
+</html>
